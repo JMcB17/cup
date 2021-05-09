@@ -25,8 +25,14 @@ class CupBot(discord.ext.commands.bot.Bot):
         return False
 
     async def is_not_cup(self, message: discord.Message):
-        if message.content.casefold() != 'cup':
+        if message.channel.name != self.config['strings']['cup_channel']:
+            return False
+
+        if message.content.casefold() != self.config['strings']['allowed_word']:
             await message.channel.send(self.config['strings']['not_cup_msg'].format(mention=message.author.mention))
+            return True
+
+        return False
 
     async def on_message(self, message: discord.Message):
         if message.author.bot:
