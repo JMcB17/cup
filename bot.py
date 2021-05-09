@@ -5,6 +5,9 @@ from pathlib import Path
 import discord.ext.commands.bot
 
 
+__version__ = '0.1.0'
+
+
 CONFIG_FILE_PATH = Path('config.json')
 
 
