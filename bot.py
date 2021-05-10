@@ -9,6 +9,7 @@ import discord.ext.commands.bot
 
 
 # todo: figure out permissions and get a proper bot invite link to put in the readme
+# todo: rename and recategorise config keys
 
 
 __version__ = '0.2.1'

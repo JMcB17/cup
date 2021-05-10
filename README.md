@@ -11,3 +11,4 @@ Implemented in [Python 3](https://python.org) with [discord.py](https://discordp
 - [x] If the word mug is said, give the user a 'banished' role.
 - [x] A user with a banished role has to say sorry five times in a specific channel to get the banished role removed
 - [ ] Use the 'cups' command to get cups and legendary cups (on a cooldown) and see how many cups and legendary cups you have
+- [ ] Use the 'config' command to change settings like the banned word (not in original bot)
