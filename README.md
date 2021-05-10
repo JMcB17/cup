@@ -1,6 +1,9 @@
 # cup
 A free and open source remake of the bot from the discord server 'cup'.
 
+All credit for concept goes to the creator or the original discord server and bot, Wes#2394    
+Original server: https://discord.gg/x3RKd5QFB8
+
 Implemented in [Python 3](https://python.org) with [discord.py](https://discordpy.readthedocs.io) and [aiosqlite](https://aiosqlite.omnilib.dev) (sqlite3 database).
 
 ## Features
