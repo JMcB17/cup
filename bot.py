@@ -172,11 +172,11 @@ class CupBot(discord.ext.commands.bot.Bot):
         if message.channel.name != self.config['strings']['redeem_channel']:
             return False
 
-        if message.content.casefold() == self.config['strings']['redeem_channel']:
+        if message.content.casefold() == self.config['strings']['redeem_command']:
             # get cup count
             cur = await self.conn.execute(
                 'SELECT cups_count, legendary_cups_count FROM cups WHERE user_id=?',
-                message.author.id
+                (message.author.id,)
             )
             r = await cur.fetchone()
             try:
@@ -189,23 +189,27 @@ class CupBot(discord.ext.commands.bot.Bot):
                 )
                 await self.conn.commit()
 
-        # calculate cups to give
-        plus_cups, plus_lcups = self.random_cups()
-        # noinspection PyUnboundLocalVariable
-        cups += plus_cups
-        # noinspection PyUnboundLocalVariable
-        lcups += plus_lcups
+            # calculate cups to give
+            plus_cups, plus_lcups = self.random_cups()
+            # noinspection PyUnboundLocalVariable
+            cups += plus_cups
+            # noinspection PyUnboundLocalVariable
+            lcups += plus_lcups
 
-        # update db and tell user
-        await self.conn.execute(
-            'UPDATE cups SET cups_count=?, legendary_cups_count=? WHERE user_id=?',
-            (cups, lcups, message.author.id)
-        )
-        await self.conn.commit()
+            # update db and tell user
+            await self.conn.execute(
+                'UPDATE cups SET cups_count=?, legendary_cups_count=? WHERE user_id=?',
+                (cups, lcups, message.author.id)
+            )
+            await self.conn.commit()
 
-        await message.channel.send(
-            self.config['strings']['cups_count_msg'].format(mention=message.author.mention, cups=cups, lcups=lcups)
-        )
+            await message.channel.send(
+                self.config['strings']['cups_count_msg'].format(mention=message.author.mention, cups=cups, lcups=lcups)
+            )
+
+            return True
+
+        return False
 
     async def on_message(self, message: discord.Message):
         """Process messages.
@@ -216,6 +220,8 @@ class CupBot(discord.ext.commands.bot.Bot):
         if message.author.bot:
             return
 
+        if await self.cups_command(message):
+            return
         if await self.is_mug(message):
             return
         if await self.is_sorry(message):
