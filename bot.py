@@ -4,6 +4,7 @@
 
 import json
 import typing
+import random
 from pathlib import Path
 
 import aiosqlite
@@ -15,7 +16,7 @@ import discord.ext.commands.bot
 # todo: add logging
 
 
-__version__ = '0.2.1'
+__version__ = '0.3.0'
 
 
 CONFIG_FILE_PATH = Path('config.json')
@@ -160,6 +161,51 @@ class CupBot(discord.ext.commands.bot.Bot):
                     await self.conn.commit()
 
         return False
+
+    @staticmethod
+    def random_cups() -> typing.Tuple[int, int]:
+        # todo: implement
+        return 3, 1
+
+    async def cups_command(self, message: discord.Message):
+        # todo: add cooldown? I believe in the original server this just ran in slowmode.
+        if message.channel.name != self.config['strings']['redeem_channel']:
+            return False
+
+        if message.content.casefold() == self.config['strings']['redeem_channel']:
+            # get cup count
+            cur = await self.conn.execute(
+                'SELECT cups_count, legendary_cups_count FROM cups WHERE user_id=?',
+                message.author.id
+            )
+            r = await cur.fetchone()
+            try:
+                cups, lcups = r[0], r[1]
+            except TypeError:
+                cups, lcups = 0, 0
+                await self.conn.execute(
+                    'INSERT INTO cups (user_id, cups_count, legendary_cups_count) VALUES (?, ?, ?)',
+                    (message.author.id, cups, lcups)
+                )
+                await self.conn.commit()
+
+        # calculate cups to give
+        plus_cups, plus_lcups = self.random_cups()
+        # noinspection PyUnboundLocalVariable
+        cups += plus_cups
+        # noinspection PyUnboundLocalVariable
+        lcups += plus_lcups
+
+        # update db and tell user
+        await self.conn.execute(
+            'UPDATE cups SET cups_count=?, legendary_cups_count=? WHERE user_id=?',
+            (cups, lcups, message.author.id)
+        )
+        await self.conn.commit()
+
+        await message.channel.send(
+            self.config['strings']['cups_count_msg'].format(mention=message.author.mention, cups=cups, lcups=lcups)
+        )
 
     async def on_message(self, message: discord.Message):
         """Process messages.
