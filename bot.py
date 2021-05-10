@@ -4,24 +4,48 @@ import json
 import typing
 from pathlib import Path
 
+import aiosqlite
 import discord.ext.commands.bot
 
 
-__version__ = '0.1.0'
+__version__ = '0.2.0a'
 
 
 CONFIG_FILE_PATH = Path('config.json')
+DB_FILE_PATH = Path('cup.db')
 
 
 class CupBot(discord.ext.commands.bot.Bot):
     def __init__(self, config: dict, *args, **kwargs):
         self.config = config
+        self.conn = None
 
         super().__init__(*args, **kwargs)
 
-    # noinspection PyMethodMayBeStatic
     async def on_ready(self):
+        self.conn = await self.init_db()
         print('Started.')
+
+    async def init_db(self) -> aiosqlite.Connection:
+        conn = await aiosqlite.connect(DB_FILE_PATH, loop=self.loop)
+        await conn.execute("""
+        CREATE TABLE IF NOT EXISTS sorry (
+            user_id INT,
+            server_id INT,
+            sorry_count INT,
+            PRIMARY KEY (user_id, server_id)
+        );
+        """)
+        await conn.execute("""
+        CREATE TABLE IF NOT EXISTS cups (
+            user_id INT PRIMARY KEY,
+            cups_count INT,
+            legendary_cups_count INT
+        );
+        """)
+        await conn.commit()
+
+        return conn
 
     @staticmethod
     def find_role(guild: discord.Guild, name: str) -> typing.Union[discord.Role, None]:
