@@ -4,16 +4,15 @@
 
 import json
 import typing
-import random
 from pathlib import Path
 
 import aiosqlite
 import discord.ext.commands.bot
 
 
-# todo: figure out permissions and get a proper bot invite link to put in the readme
-# todo: rename and recategorise config keys
 # todo: add logging
+# todo: make sure everything matches the original version
+# todo: finish the feature list
 
 
 __version__ = '0.4.0'
@@ -29,6 +28,9 @@ class CupBot(discord.ext.commands.bot.Bot):
     def __init__(self, config: dict, *args, **kwargs):
         """Make config an attribute and declare the conn attribute, then call the superclass init."""
         self.config = config
+        self.lang = self.config['strings']['lang']
+        if self.lang not in self.config['strings']:
+            raise KeyError('The selected language is not present in the strings list.')
         self.conn = None
 
         super().__init__(*args, **kwargs)
@@ -110,7 +112,7 @@ class CupBot(discord.ext.commands.bot.Bot):
 
         if message.content.casefold() != self.config['cup']['allowed_word']:
             await message.channel.send(
-                self.config['strings']['en']['not_cup_msg'].format(mention=message.author.mention)
+                self.config['strings'][self.lang]['not_cup_msg'].format(mention=message.author.mention)
             )
             return True
 
@@ -214,13 +216,13 @@ class CupBot(discord.ext.commands.bot.Bot):
             await self.conn.commit()
 
             await message.channel.send(
-                self.config['strings']['en']['cups_count_msg'].format(
+                self.config['strings'][self.lang]['cups_count_msg'].format(
                     mention=message.author.mention, cups=cups, lcups=lcups
                 )
             )
         else:
             await message.channel.send(
-                self.config['strings']['en']['not_cups_msg'].format(mention=message.author.mention)
+                self.config['strings'][self.lang]['not_cups_msg'].format(mention=message.author.mention)
             )
             await message.delete()
 
