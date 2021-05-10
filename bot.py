@@ -1,6 +1,6 @@
-"""A free and open source remake of the bot from the discord server 'cup'."""
-
 #!/usr/bin/env python
+
+"""A free and open source remake of the bot from the discord server 'cup'."""
 
 import json
 import typing
