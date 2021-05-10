@@ -144,16 +144,16 @@ class CupBot(discord.ext.commands.bot.Bot):
                     sorry_count = 0
                     await self.conn.execute(
                         'INSERT INTO sorry (user_id, server_id, sorry_count) VALUES (?, ?, ?)',
-                        (message.author.id, message.guild.id, 0)
+                        (message.author.id, message.guild.id, sorry_count)
                     )
                     await self.conn.commit()
 
                 sorry_count_required = self.config['settings']['sorry_count_required']
+                sorry_count += 1
 
                 if sorry_count >= sorry_count_required:
                     await message.author.remove_roles(banished_role, reason='sorry')
                 else:
-                    sorry_count += 1
                     await self.conn.execute(
                         'UPDATE sorry SET sorry_count=? WHERE user_id=? AND server_id=?',
                         (sorry_count, message.author.id, message.guild.id)
