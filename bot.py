@@ -16,7 +16,7 @@ import discord.ext.commands.bot
 # todo: add logging
 
 
-__version__ = '0.3.0'
+__version__ = '0.4.0'
 
 
 CONFIG_FILE_PATH = Path('config.json')
@@ -226,13 +226,13 @@ class CupBot(discord.ext.commands.bot.Bot):
         if message.author.bot:
             return
 
+        mug = await self.is_mug(message)
         if await self.is_sorry(message):
-            return
-        if await self.is_mug(message):
             return
         if await self.cups_command(message):
             return
-        await self.is_not_cup(message)
+        if not mug:
+            await self.is_not_cup(message)
 
         await super().on_message(message)
 

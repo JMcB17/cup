@@ -15,13 +15,18 @@ Original server: https://discord.gg/x3RKd5QFB8
 - [x] Use the 'cups' command to get cups and legendary cups (on a cooldown) and see how many cups and legendary cups you have
 - [ ] Use the 'config' command to change settings like the banned word (not in original bot)
 
-## Add my official instance of the bot to your server
-
-Coming soon
-
 ## Run the bot yourself
 
 - Copy config.template.json to make config.json
 - [Create a discord bot account](https://discordpy.readthedocs.io/en/latest/discord.html) and fill in your token in config.json
 - Install dependencies from requirements.txt with pip
 - Run with python
+
+## Add my official instance of the bot to your server
+
+https://discord.com/api/oauth2/authorize?client_id=841017008858071133&permissions=268446720&scope=bot    
+Make sure to put it high up enough in the roles list that it can manage the 'banished' role.    
+Also make sure it has access to the banished channel.
+
+## Join the official discord server
+https://discord.gg/cdrgtpWhCX
