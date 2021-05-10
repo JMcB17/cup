@@ -84,9 +84,6 @@ class CupBot(discord.ext.commands.bot.Bot):
         If the return value is True, it will also give the user the banished role, and write to the database that
         they have said sorry zero times.
         """
-        if message.channel.name != self.config['cup']['cup_channel']:
-            return False
-
         if message.content.casefold() == self.config['mug']['banned_word']:
             # noinspection PyTypeChecker
             banished_role = self._find_role(message.guild, self.config['mug']['banished_role'])
@@ -161,8 +158,10 @@ class CupBot(discord.ext.commands.bot.Bot):
                         (sorry_count, message.author.id, message.guild.id)
                     )
                     await self.conn.commit()
+        else:
+            await message.delete()
 
-        return False
+        return True
 
     @staticmethod
     def random_cups() -> typing.Tuple[int, int]:
@@ -210,25 +209,28 @@ class CupBot(discord.ext.commands.bot.Bot):
                     mention=message.author.mention, cups=cups, lcups=lcups
                 )
             )
+        else:
+            await message.channel.send(
+                self.config['strings']['en']['not_cups_msg'].format(mention=message.author.mention)
+            )
+            await message.delete()
 
-            return True
-
-        return False
+        return True
 
     async def on_message(self, message: discord.Message):
         """Process messages.
 
-        Check for mug messages, sorry messages, and not cup messages. Then run the superclass method
+        Check for the cup command, mug messages, sorry messages, and not cup messages. Then run the superclass method
         (process commands, although there aren't any regular commands at the moment).
         """
         if message.author.bot:
             return
 
-        if await self.cups_command(message):
+        if await self.is_sorry(message):
             return
         if await self.is_mug(message):
             return
-        if await self.is_sorry(message):
+        if await self.cups_command(message):
             return
         await self.is_not_cup(message)
 
