@@ -28,5 +28,8 @@ https://discord.com/api/oauth2/authorize?client_id=841017008858071133&permission
 Make sure to put it high up enough in the roles list that it can manage the 'banished' role.    
 Also make sure it has access to the banished channel.
 
+Note that this is not guaranteed to be online. If you want to use it, and it's not online, please message me.    
+My discord username: JMcB#7918
+
 ## Join the official discord server
 https://discord.gg/cdrgtpWhCX
