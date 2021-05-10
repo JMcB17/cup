@@ -165,10 +165,19 @@ class CupBot(discord.ext.commands.bot.Bot):
 
     @staticmethod
     def random_cups() -> typing.Tuple[int, int]:
+        """Return the number of cups and legendary cups to give."""
         # todo: implement
         return 3, 1
 
     async def cups_command(self, message: discord.Message):
+        """Check if the message says cups and is in the appropriate channel.
+
+        Returns True if the cups command was run, False otherwise.
+        If the return value is True, it will also give the user additional cups and legendary cups in the database,
+        and say how many cups they have.
+        Or, if the message was in the cups channel but did not say cups, it will be deleted, and a warning will be sent
+        in the channel.
+        """
         # todo: add cooldown? I believe in the original server this just ran in slowmode.
         if message.channel.name != self.config['cups']['redeem_channel']:
             return False
