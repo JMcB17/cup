@@ -8,7 +8,7 @@ import aiosqlite
 import discord.ext.commands.bot
 
 
-__version__ = '0.2.0a'
+__version__ = '0.2.0'
 
 
 CONFIG_FILE_PATH = Path('config.json')
@@ -54,7 +54,7 @@ class CupBot(discord.ext.commands.bot.Bot):
                 return role
         return None
 
-    async def is_mug(self, message: discord.Message):
+    async def is_mug(self, message: discord.Message) -> bool:
         if message.channel.name != self.config['strings']['cup_channel']:
             return False
 
@@ -63,11 +63,16 @@ class CupBot(discord.ext.commands.bot.Bot):
             banished_role = self.find_role(message.guild, self.config['strings']['banished_role'])
             if banished_role:
                 await message.author.add_roles(banished_role, reason='mug')
+                await self.conn.execute(
+                    'REPLACE INTO sorry (user_id, server_id, sorry_count) VALUES (?, ?, ?)',
+                    (message.author.id, message.guild.id, 0)
+                )
+                await self.conn.commit()
             return True
 
         return False
 
-    async def is_not_cup(self, message: discord.Message):
+    async def is_not_cup(self, message: discord.Message) -> bool:
         if message.channel.name != self.config['strings']['cup_channel']:
             return False
 
@@ -77,12 +82,48 @@ class CupBot(discord.ext.commands.bot.Bot):
 
         return False
 
+    async def is_sorry(self, message: discord.Message) -> bool:
+        if message.channel.name != self.config['strings']['sorry_channel']:
+            return False
+
+        # noinspection PyTypeChecker
+        banished_role = self.find_role(message.guild, self.config['strings']['banished_role'])
+        if message.content.casefold() == self.config['strings']['sorry_word']:
+            # noinspection PyTypeChecker
+            if banished_role in message.author.roles:
+                cur = await self.conn.execute(
+                    'SELECT sorry_count FROM sorry WHERE user_id=? AND server_id=?',
+                    (message.author.id, message.guild.id)
+                )
+                result = await cur.fetchone()
+                try:
+                    sorry_count = result[0]
+                except TypeError:
+                    sorry_count = 0
+
+                sorry_count_required = self.config['settings']['sorry_count_required']
+
+                if sorry_count >= sorry_count_required:
+                    await message.author.remove_roles(banished_role, reason='sorry')
+                else:
+                    sorry_count += 1
+                    await self.conn.execute(
+                        'UPDATE sorry SET sorry_count=? WHERE user_id=? AND server_id=?',
+                        (sorry_count, message.author.id, message.guild.id)
+                    )
+                    await self.conn.commit()
+
+        return False
+
     async def on_message(self, message: discord.Message):
         if message.author.bot:
             return
 
-        if not await self.is_mug(message):
-            await self.is_not_cup(message)
+        if await self.is_mug(message):
+            return
+        if await self.is_sorry(message):
+            return
+        await self.is_not_cup(message)
 
         await super().on_message(message)
 
