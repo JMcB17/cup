@@ -8,7 +8,7 @@ import aiosqlite
 import discord.ext.commands.bot
 
 
-__version__ = '0.2.0'
+__version__ = '0.2.1'
 
 
 CONFIG_FILE_PATH = Path('config.json')
@@ -100,6 +100,11 @@ class CupBot(discord.ext.commands.bot.Bot):
                     sorry_count = result[0]
                 except TypeError:
                     sorry_count = 0
+                    await self.conn.execute(
+                        'INSERT INTO sorry (user_id, server_id, sorry_count) VALUES (?, ?, ?)',
+                        (message.author.id, message.guild.id, 0)
+                    )
+                    await self.conn.commit()
 
                 sorry_count_required = self.config['settings']['sorry_count_required']
 
